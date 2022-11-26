@@ -29,6 +29,9 @@ app.get("/", (req, res) => {
 // api gateway function
 async function run() {
   const usersCollection = client.db("productsResale").collection("users");
+  const categoriesCollection = client
+    .db("productsResale")
+    .collection("categories");
 
   try {
     // check if a user exists
@@ -85,6 +88,16 @@ async function run() {
       res.send({
         status: true,
         allData: result,
+      });
+    });
+
+    // get brand categories
+    app.get("/categories", async (req, res) => {
+      const query = {};
+      const result = await categoriesCollection.find(query).toArray();
+      res.send({
+        status: true,
+        data: result,
       });
     });
   } finally {
