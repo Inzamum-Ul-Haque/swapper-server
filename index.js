@@ -21,9 +21,77 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// default api
 app.get("/", (req, res) => {
   res.send("Products resale server running!");
 });
+
+// api gateway function
+async function run() {
+  const usersCollection = client.db("productsResale").collection("users");
+
+  try {
+    // check if a user exists
+    app.get("/checkUser", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { email: userEmail };
+      const result = await usersCollection.findOne(query);
+      if (result) {
+        res.send({
+          status: true,
+          message: "User already exists!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "User doesn't exist!",
+        });
+      }
+    });
+
+    // create a user
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "Your account has been created",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please register again!",
+        });
+      }
+    });
+
+    // get a user
+    app.get("/user", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { email: userEmail };
+      const result = await usersCollection.findOne(query);
+      res.send({
+        status: true,
+        data: result,
+      });
+    });
+
+    // get users based on buyer and seller
+    app.get("/users", async (req, res) => {
+      const type = req.query.type;
+      const query = { userType: type };
+      const result = await usersCollection.find(query).toArray();
+      res.send({
+        status: true,
+        allData: result,
+      });
+    });
+  } finally {
+  }
+}
+
+run().catch((error) => console.error(error));
 
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
