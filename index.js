@@ -29,6 +29,7 @@ app.get("/", (req, res) => {
 // api gateway function
 async function run() {
   const usersCollection = client.db("productsResale").collection("users");
+  const productsCollection = client.db("productsResale").collection("products");
   const categoriesCollection = client
     .db("productsResale")
     .collection("categories");
@@ -99,6 +100,41 @@ async function run() {
         status: true,
         data: result,
       });
+    });
+
+    // add a product
+    app.post("/product", async (req, res) => {
+      const productInfo = req.body;
+      const result = await productsCollection.insertOne(productInfo);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "Product has been successfully added!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
+    });
+
+    // delete a user
+    app.delete("/user", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { email: userEmail };
+      const result = await usersCollection.deleteOne(query);
+      if (result.deletedCount > 0) {
+        res.send({
+          status: true,
+          message: "User deleted successfully!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
     });
   } finally {
   }
