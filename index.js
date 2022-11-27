@@ -31,6 +31,9 @@ async function run() {
   const usersCollection = client.db("productsResale").collection("users");
   const productsCollection = client.db("productsResale").collection("products");
   const bookingsCollection = client.db("productsResale").collection("bookings");
+  const advertiseCollection = client
+    .db("productsResale")
+    .collection("advertise");
   const categoriesCollection = client
     .db("productsResale")
     .collection("categories");
@@ -223,6 +226,44 @@ async function run() {
           message: "An error occurred! Please try again!",
         });
       }
+    });
+
+    // advertise an item
+    app.post("/advertise", async (req, res) => {
+      const advertiseItem = req.body;
+      // check before adding if this item exists in the advertise collection
+      const id = advertiseItem.productId;
+      const query = { productId: id };
+      const exists = await advertiseCollection.findOne(query);
+      if (exists) {
+        res.send({
+          status: false,
+          message: "This item is already advertised!",
+        });
+      } else {
+        const result = await advertiseCollection.insertOne(advertiseItem);
+        if (result.acknowledged) {
+          res.send({
+            status: true,
+            message: "Item has been advertised",
+          });
+        } else {
+          res.send({
+            status: false,
+            message: "An error occurred! Please try again!",
+          });
+        }
+      }
+    });
+
+    // get advertised items from db
+    app.get("/advertise", async (req, res) => {
+      const query = {};
+      const result = await advertiseCollection.find(query).limit(4).toArray();
+      res.send({
+        status: true,
+        data: result,
+      });
     });
   } finally {
   }
