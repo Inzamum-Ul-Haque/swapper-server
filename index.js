@@ -170,6 +170,24 @@ async function run() {
         data: result,
       });
     });
+
+    // show products based on categories
+    app.get("/category/:id", async (req, res) => {
+      // first get the category from categories collection
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await categoriesCollection.findOne(query);
+      const categoryName = result.name;
+
+      // get the products from that category
+      const filter = { productCategory: categoryName };
+      const products = await productsCollection.find(filter).toArray();
+      res.send({
+        status: true,
+        data: products,
+        category: categoryName,
+      });
+    });
   } finally {
   }
 }
