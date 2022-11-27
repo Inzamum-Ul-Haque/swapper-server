@@ -136,6 +136,40 @@ async function run() {
         });
       }
     });
+
+    // verify a user
+    app.patch("/user", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { email: userEmail };
+      const updatedDoc = {
+        $set: {
+          verified: true,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updatedDoc);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "User verified successfully!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
+    });
+
+    // show products under a user
+    app.get("/products", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { sellerEmail: userEmail };
+      const result = await productsCollection.find(query).toArray();
+      res.send({
+        status: true,
+        data: result,
+      });
+    });
   } finally {
   }
 }
