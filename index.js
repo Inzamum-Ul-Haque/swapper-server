@@ -265,6 +265,17 @@ async function run() {
         data: result,
       });
     });
+
+    // get orders ordered by a user
+    app.get("/orders", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { buyerEmail: userEmail };
+      const result = await bookingsCollection.find(query).toArray();
+      res.send({
+        status: true,
+        data: result,
+      });
+    });
   } finally {
   }
 }
