@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 async function run() {
   const usersCollection = client.db("productsResale").collection("users");
   const productsCollection = client.db("productsResale").collection("products");
+  const bookingsCollection = client.db("productsResale").collection("bookings");
   const categoriesCollection = client
     .db("productsResale")
     .collection("categories");
@@ -187,6 +188,41 @@ async function run() {
         data: products,
         category: categoryName,
       });
+    });
+
+    // delete a product
+    app.delete("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "Product deleted successfully!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
+    });
+
+    // book a order
+    app.post("/booking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "Order placed successfully!",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
     });
   } finally {
   }
