@@ -31,6 +31,9 @@ async function run() {
   const usersCollection = client.db("productsResale").collection("users");
   const productsCollection = client.db("productsResale").collection("products");
   const bookingsCollection = client.db("productsResale").collection("bookings");
+  const wishListCollection = client
+    .db("productsResale")
+    .collection("wishlists");
   const advertiseCollection = client
     .db("productsResale")
     .collection("advertise");
@@ -276,6 +279,72 @@ async function run() {
         data: result,
       });
     });
+
+    // add item to wishlist
+    app.post("/addToWishlist", async (req, res) => {
+      const wishListItem = req.body;
+
+      // check if the item exists on wishlist collection
+      const id = wishListItem.productId;
+      const query = { productId: id };
+      const exists = await wishListCollection.findOne(query);
+      if (exists) {
+        res.send({
+          status: false,
+          message: "This item is already wishlisted!",
+        });
+      } else {
+        const result = await wishListCollection.insertOne(wishListItem);
+        if (result.acknowledged) {
+          res.send({
+            status: true,
+            message: "Item has been wishlisted",
+          });
+        } else {
+          res.send({
+            status: false,
+            message: "An error occurred! Please try again!",
+          });
+        }
+      }
+    });
+
+    // get items from wishlist
+    app.get("/wishlist", async (req, res) => {
+      const userEmail = req.query.email;
+      const query = { buyerEmail: userEmail };
+      const result = await wishListCollection.find(query).toArray();
+      res.send({
+        status: true,
+        data: result,
+      });
+    });
+
+    // delete item from wishlist
+    app.delete("/wishlist", async (req, res) => {
+      const userEmail = req.query.email;
+      const productId = req.query.productId;
+
+      const query = { buyerEmail: userEmail, productId: productId };
+      const result = await wishListCollection.deleteOne(query);
+      if (result.acknowledged) {
+        res.send({
+          status: true,
+          message: "Item have been deleted from wishlist",
+        });
+      } else {
+        res.send({
+          status: false,
+          message: "An error occurred! Please try again!",
+        });
+      }
+    });
+
+    // load data for payment
+    // app.get('/bookingPayment/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const query =
+    // })
   } finally {
   }
 }
