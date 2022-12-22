@@ -327,7 +327,11 @@ async function run() {
     // get advertised items from db
     app.get("/advertise", async (req, res) => {
       const query = {};
-      const result = await advertiseCollection.find(query).limit(4).toArray();
+      const result = await advertiseCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .limit(4)
+        .toArray();
       res.send({
         status: true,
         data: result,
